@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindAR - Realidade Aumentada</title>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image.prod.js"></script>
+    <title>Ferramenta de Desenvolvimento AR</title>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mind-ar-image.prod.js"></script>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mind-ar-image-aframe.prod.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -16,152 +17,144 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: white;
+            background: #1e1e1e;
+            color: #fff;
             min-height: 100vh;
-            padding: 20px;
         }
         
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            padding: 30px 0;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: 400px 1fr;
+            height: 100vh;
         }
         
-        @media (max-width: 768px) {
-            .content {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .info-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .info-card h2 {
-            margin-bottom: 15px;
-            color: #ffcc00;
-        }
-        
-        .info-card ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        
-        .info-card li {
-            margin-bottom: 10px;
-            padding-left: 20px;
-            position: relative;
-        }
-        
-        .info-card li:before {
-            content: "•";
-            color: #ffcc00;
-            position: absolute;
-            left: 0;
-        }
-        
-        .instructions {
-            background: rgba(0, 0, 0, 0.3);
+        .sidebar {
+            background: #2d2d2d;
             padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
+            border-right: 1px solid #444;
+            overflow-y: auto;
         }
         
-        .instructions h3 {
-            margin-bottom: 10px;
-            color: #ffcc00;
+        .preview-area {
+            background: #000;
+            display: flex;
+            flex-direction: column;
         }
         
         .ar-container {
+            flex: 1;
             position: relative;
-            width: 100%;
-            height: 500px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        }
-        
-        #ar-scene {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .target-image {
-            text-align: center;
-            margin-top: 20px;
-        }
-        
-        .target-image img {
-            max-width: 200px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         
         .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
+            background: #2d2d2d;
+            padding: 15px;
+            border-top: 1px solid #444;
+        }
+        
+        h1, h2, h3 {
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 12px;
+            background: #3d3d3d;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        textarea {
+            height: 80px;
+            resize: vertical;
+            font-family: monospace;
         }
         
         button {
-            background: #ffcc00;
-            color: #1a2a6c;
+            background: #007acc;
+            color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin: 5px 0;
+            width: 100%;
+            font-size: 14px;
         }
         
         button:hover {
-            background: #ffd633;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: #005a9e;
         }
         
-        button:active {
-            transform: translateY(0);
+        button.secondary {
+            background: #555;
         }
         
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 0.9rem;
-            opacity: 0.8;
+        button.success {
+            background: #28a745;
+        }
+        
+        .file-info {
+            background: #3d3d3d;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #ccc;
+        }
+        
+        .code-preview {
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .tab-button {
+            flex: 1;
+            background: #3d3d3d;
+            border: none;
+            padding: 10px;
+            color: #ccc;
+            cursor: pointer;
+        }
+        
+        .tab-button.active {
+            background: #007acc;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
         
         .loading {
@@ -170,135 +163,388 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 10;
+            color: #ccc;
         }
         
         .hidden {
             display: none;
         }
+        
+        .status-bar {
+            background: #007acc;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>MindAR - Realidade Aumentada</h1>
-            <p class="subtitle">Experiência de RA diretamente no navegador</p>
-        </header>
-        
-        <div class="content">
-            <div class="info-card">
-                <h2>O que é o MindAR?</h2>
-                <p>MindAR é uma biblioteca JavaScript de código aberto que permite criar experiências de realidade aumentada diretamente no navegador, sem necessidade de aplicativos.</p>
-                
-                <div class="instructions">
-                    <h3>Como usar:</h3>
-                    <ol>
-                        <li>Clique em "Iniciar Câmera" para ativar a câmera</li>
-                        <li>Aponte para a imagem alvo (ao lado)</li>
-                        <li>Veja o modelo 3D aparecer em realidade aumentada!</li>
-                    </ol>
-                </div>
-                
-                <h2>Vantagens do MindAR:</h2>
-                <ul>
-                    <li>Funciona diretamente no navegador</li>
-                    <li>Não requer instalação de aplicativos</li>
-                    <li>Compatível com dispositivos móveis e desktop</li>
-                    <li>Fácil implementação com HTML</li>
-                    <li>Suporte a múltiplos alvos</li>
-                    <li>Rastreamento em tempo real</li>
-                </ul>
+        <!-- Sidebar de Desenvolvimento -->
+        <div class="sidebar">
+            <h2>🛠️ Desenvolvimento AR</h2>
+            
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('assets')">Assets</button>
+                <button class="tab-button" onclick="showTab('config')">Configuração</button>
+                <button class="tab-button" onclick="showTab('export')">Exportar</button>
             </div>
             
-            <div class="info-card">
-                <h2>Experiência de Realidade Aumentada</h2>
-                
-                <div class="ar-container">
-                    <div id="loading" class="loading">
-                        <p>Carregando realidade aumentada...</p>
-                        <p>Por favor, aguarde.</p>
-                    </div>
-                    
-                    <a-scene 
-                        id="ar-scene"
-                        mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.3/examples/image-tracking/assets/band-example/band.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
-                        color-space="sRGB"
-                        embedded
-                        renderer="colorManagement: true, physicallyCorrectLights"
-                        vr-mode-ui="enabled: false"
-                        device-orientation-permission-ui="enabled: false">
-                        
-                        <a-assets>
-                            <a-asset-item id="bearModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.3/examples/image-tracking/assets/band-example/bear.gltf"></a-asset-item>
-                        </a-assets>
-
-                        <a-camera active="false" position="0 0 0"></a-camera>
-
-                        <a-entity mindar-image-target="targetIndex: 0">
-                            <a-gltf-model 
-                                rotation="0 0 0 " 
-                                position="0 0 0.1" 
-                                scale="0.05 0.05 0.05" 
-                                src="#bearModel"
-                                animation="property: rotation; to: 0 360 0; loop: true; dur: 5000">
-                            </a-gltf-model>
-                        </a-entity>
-                    </a-scene>
+            <!-- Tab: Assets -->
+            <div id="assets-tab" class="tab-content active">
+                <div class="form-group">
+                    <label>🎯 Imagem Target (Marcador):</label>
+                    <input type="file" id="targetImage" accept="image/*">
+                    <div class="file-info" id="targetInfo">Nenhum arquivo selecionado</div>
                 </div>
                 
-                <div class="target-image">
-                    <p>Imagem alvo para rastreamento:</p>
-                    <img src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.3/examples/image-tracking/assets/band-example/band.png" alt="Imagem alvo">
+                <div class="form-group">
+                    <label>📦 Modelo 3D (GLTF/GLB):</label>
+                    <input type="file" id="model3d" accept=".gltf,.glb,.fbx">
+                    <div class="file-info" id="modelInfo">Nenhum arquivo selecionado</div>
                 </div>
                 
-                <div class="controls">
-                    <button id="startButton">Iniciar Câmera</button>
-                    <button id="stopButton">Parar Câmera</button>
+                <div class="form-group">
+                    <label>🔊 Áudio (MP3/WAV):</label>
+                    <input type="file" id="audioFile" accept="audio/*">
+                    <div class="file-info" id="audioInfo">Nenhum arquivo selecionado</div>
+                </div>
+                
+                <button onclick="loadAssets()">📥 Carregar Assets</button>
+            </div>
+            
+            <!-- Tab: Configuração -->
+            <div id="config-tab" class="tab-content">
+                <div class="form-group">
+                    <label>📏 Escala do Modelo:</label>
+                    <input type="text" id="modelScale" value="0.1 0.1 0.1" placeholder="x y z">
+                </div>
+                
+                <div class="form-group">
+                    <label>📍 Posição:</label>
+                    <input type="text" id="modelPosition" value="0 0 0.1" placeholder="x y z">
+                </div>
+                
+                <div class="form-group">
+                    <label>🔄 Rotação:</label>
+                    <input type="text" id="modelRotation" value="0 0 0" placeholder="x y z">
+                </div>
+                
+                <div class="form-group">
+                    <label>🎭 Animação:</label>
+                    <select id="animationType">
+                        <option value="none">Sem Animação</option>
+                        <option value="rotation">Rotação</option>
+                        <option value="bounce">Bounce</option>
+                        <option value="pulse">Pulse</option>
+                        <option value="custom">Customizada</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="customAnimationGroup" style="display: none;">
+                    <label>⚙️ Animação Customizada:</label>
+                    <textarea id="customAnimation" placeholder='property: rotation; to: 0 360 0; loop: true; dur: 5000'></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>🔊 Comportamento do Áudio:</label>
+                    <select id="audioBehavior">
+                        <option value="autoplay">Tocar automaticamente</option>
+                        <option value="onClick">Tocar ao clicar</option>
+                        <option value="loop">Loop contínuo</option>
+                    </select>
+                </div>
+                
+                <button onclick="applyConfig()">⚡ Aplicar Configurações</button>
+            </div>
+            
+            <!-- Tab: Exportar -->
+            <div id="export-tab" class="tab-content">
+                <div class="form-group">
+                    <label>🏷️ Nome do Projeto:</label>
+                    <input type="text" id="projectName" value="meu-projeto-ar">
+                </div>
+                
+                <div class="form-group">
+                    <label>📁 Exportar Como:</label>
+                    <select id="exportType">
+                        <option value="html">Arquivo HTML Único</option>
+                        <option value="zip">Projeto Completo (ZIP)</option>
+                    </select>
+                </div>
+                
+                <button class="success" onclick="generateProject()">📦 Gerar Projeto</button>
+                <button onclick="generateQRCode()">📱 Gerar QR Code</button>
+                
+                <div class="code-preview" id="codePreview">
+                    // Preview do código gerado aparecerá aqui
                 </div>
             </div>
         </div>
         
-        <footer>
-            <p>Desenvolvido com MindAR.js - Uma biblioteca de realidade aumentada para a web</p>
-            <p>Funciona melhor em dispositivos móveis com câmera traseira</p>
-        </footer>
+        <!-- Área de Preview -->
+        <div class="preview-area">
+            <div class="status-bar" id="statusBar">
+                Pronto para desenvolver - Faça upload dos assets para começar
+            </div>
+            
+            <div class="ar-container">
+                <div id="loading" class="loading">
+                    <p>⏳ Aguardando configuração...</p>
+                    <p>Use o painel lateral para carregar assets</p>
+                </div>
+                
+                <a-scene 
+                    id="ar-scene"
+                    mindar-image="imageTargetSrc: #target; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
+                    color-space="sRGB"
+                    embedded
+                    renderer="colorManagement: true, physicallyCorrectLights"
+                    vr-mode-ui="enabled: false"
+                    device-orientation-permission-ui="enabled: false">
+                    
+                    <a-assets>
+                        <img id="target" crossOrigin="anonymous">
+                        <audio id="soundEffect" src=""></audio>
+                    </a-assets>
+
+                    <a-camera active="false" position="0 0 0"></a-camera>
+
+                    <a-entity mindar-image-target="targetIndex: 0">
+                        <!-- Modelo 3D será inserido aqui -->
+                    </a-entity>
+                </a-scene>
+            </div>
+            
+            <div class="controls">
+                <button onclick="startAR()">🎥 IniciAR AR</button>
+                <button class="secondary" onclick="stopAR()">⏹️ ParAR AR</button>
+                <button onclick="screenshot()">📸 Capturar Tela</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const startButton = document.getElementById('startButton');
-            const stopButton = document.getElementById('stopButton');
-            const loadingElement = document.getElementById('loading');
+        let currentAssets = {
+            targetImage: null,
+            model3d: null,
+            audio: null
+        };
+
+        // Sistema de tabs
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Gerenciamento de arquivos
+        document.getElementById('targetImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('targetInfo').textContent = 
+                    `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+                currentAssets.targetImage = file;
+            }
+        });
+
+        document.getElementById('model3d').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('modelInfo').textContent = 
+                    `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+                currentAssets.model3d = file;
+            }
+        });
+
+        document.getElementById('audioFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('audioInfo').textContent = 
+                    `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+                currentAssets.audio = file;
+            }
+        });
+
+        // Toggle animação customizada
+        document.getElementById('animationType').addEventListener('change', function(e) {
+            document.getElementById('customAnimationGroup').style.display = 
+                e.target.value === 'custom' ? 'block' : 'none';
+        });
+
+        // Carregar assets na cena
+        function loadAssets() {
+            if (!currentAssets.targetImage) {
+                alert('Selecione uma imagem target primeiro!');
+                return;
+            }
+
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = 'Carregando assets...';
+
+            // Carregar imagem target
+            const targetElement = document.getElementById('target');
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                targetElement.src = e.target.result;
+                
+                // Configurar cena básica
+                setupScene();
+                
+                document.getElementById('loading').classList.add('hidden');
+                statusBar.textContent = 'Assets carregados! AplicAR configurações ou iniciAR AR.';
+                
+                // Gerar preview do código
+                generateCodePreview();
+            };
+            
+            reader.readAsDataURL(currentAssets.targetImage);
+        }
+
+        // Configurar cena AR
+        function setupScene() {
             const scene = document.getElementById('ar-scene');
+            const targetEntity = scene.querySelector('[mindar-image-target]');
             
-            // Iniciar a experiência AR
-            startButton.addEventListener('click', function() {
-                loadingElement.classList.remove('hidden');
-                
-                // Iniciar o sistema MindAR
-                const arSystem = scene.systems["mindar-image-system"];
-                arSystem.start().then(() => {
-                    loadingElement.classList.add('hidden');
-                });
-                
-                startButton.disabled = true;
-                stopButton.disabled = false;
-            });
+            // Limpar cena anterior
+            targetEntity.innerHTML = '';
             
-            // Parar a experiência AR
-            stopButton.addEventListener('click', function() {
-                const arSystem = scene.systems["mindar-image-system"];
-                arSystem.stop();
-                
-                startButton.disabled = false;
-                stopButton.disabled = true;
-            });
+            // Adicionar modelo básico (será substituído por configuração)
+            const box = document.createElement('a-box');
+            box.setAttribute('color', '#4CC3D9');
+            box.setAttribute('position', '0 0 0.1');
+            box.setAttribute('scale', '0.1 0.1 0.1');
+            targetEntity.appendChild(box);
+        }
+
+        // Aplicar configurações
+        function applyConfig() {
+            const scene = document.getElementById('ar-scene');
+            const targetEntity = scene.querySelector('[mindar-image-target]');
+            const model = targetEntity.children[0];
             
-            // Inicialmente desabilitar o botão de parar
-            stopButton.disabled = true;
+            // Aplicar transformações
+            model.setAttribute('scale', document.getElementById('modelScale').value);
+            model.setAttribute('position', document.getElementById('modelPosition').value);
+            model.setAttribute('rotation', document.getElementById('modelRotation').value);
+            
+            // Aplicar animação
+            const animationType = document.getElementById('animationType').value;
+            if (animationType !== 'none') {
+                const animationConfig = getAnimationConfig(animationType);
+                model.setAttribute('animation', animationConfig);
+            } else {
+                model.removeAttribute('animation');
+            }
+            
+            generateCodePreview();
+        }
+
+        function getAnimationConfig(type) {
+            const configs = {
+                rotation: 'property: rotation; to: 0 360 0; loop: true; dur: 5000',
+                bounce: 'property: position; to: 0 0.2 0.1; dir: alternate; loop: true; dur: 1000',
+                pulse: 'property: scale; to: 0.15 0.15 0.15; dir: alternate; loop: true; dur: 800',
+                custom: document.getElementById('customAnimation').value
+            };
+            return configs[type] || '';
+        }
+
+        // Controles AR
+        function startAR() {
+            const scene = document.getElementById('ar-scene');
+            const arSystem = scene.systems["mindar-image-system"];
+            arSystem.start();
+            document.getElementById('statusBar').textContent = 'AR ativo - Aponte para o target';
+        }
+
+        function stopAR() {
+            const scene = document.getElementById('ar-scene');
+            const arSystem = scene.systems["mindar-image-system"];
+            arSystem.stop();
+            document.getElementById('statusBar').textContent = 'AR parado';
+        }
+
+        function screenshot() {
+            alert('Funcionalidade de screenshot será implementada!');
+        }
+
+        // Gerar preview do código
+        function generateCodePreview() {
+            const scale = document.getElementById('modelScale').value;
+            const position = document.getElementById('modelPosition').value;
+            const rotation = document.getElementById('modelRotation').value;
+            const animation = document.getElementById('animationType').value;
+            
+            const code = `
+<a-entity mindar-image-target="targetIndex: 0">
+    <a-box
+        color="#4CC3D9"
+        position="${position}"
+        rotation="${rotation}"
+        scale="${scale}"
+        ${animation !== 'none' ? `animation="${getAnimationConfig(animation)}"` : ''}
+    ></a-box>
+</a-entity>`;
+            
+            document.getElementById('codePreview').textContent = code;
+        }
+
+        // Gerar projeto
+        function generateProject() {
+            const projectName = document.getElementById('projectName').value || 'meu-projeto-ar';
+            const exportType = document.getElementById('exportType').value;
+            
+            if (exportType === 'html') {
+                generateHTMLFile(projectName);
+            } else {
+                alert('Exportação ZIP será implementada em breve!');
+            }
+        }
+
+        function generateHTMLFile(projectName) {
+            const htmlContent = generateCompleteHTML();
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${projectName}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function generateCompleteHTML() {
+            // Aqui você geraria o HTML completo com todas as configurações
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <title>Projeto AR</title>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mind-ar-image.prod.js"></script>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mind-ar-image-aframe.prod.js"></script>
+</head>
+<body>
+    <a-scene mindar-image="imageTargetSrc: assets/target.mind" ...>
+        <!-- Sua cena AR aqui -->
+    </a-scene>
+</body>
+</html>`;
+        }
+
+        function generateQRCode() {
+            alert('QR Code será gerado para a URL do projeto quando hospedado!');
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Ferramenta de desenvolvimento AR carregada!');
         });
     </script>
 </body>
