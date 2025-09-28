@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ferramenta de Desenvolvimento AR</title>
+    <title>Studio AR - Desenvolvimento</title>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mind-ar-image.prod.js"></script>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mind-ar-image-aframe.prod.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
     <style>
         * {
             margin: 0;
@@ -17,21 +16,21 @@
         }
         
         body {
-            background: #1e1e1e;
-            color: #fff;
+            background: #1a1a1a;
+            color: white;
             min-height: 100vh;
         }
         
         .container {
             display: grid;
-            grid-template-columns: 400px 1fr;
+            grid-template-columns: 350px 1fr;
             height: 100vh;
         }
         
         .sidebar {
             background: #2d2d2d;
             padding: 20px;
-            border-right: 1px solid #444;
+            border-right: 2px solid #444;
             overflow-y: auto;
         }
         
@@ -39,26 +38,86 @@
             background: #000;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         
         .ar-container {
             flex: 1;
-            position: relative;
+            background: #000;
         }
         
         .controls {
-            background: #2d2d2d;
+            background: #333;
             padding: 15px;
-            border-top: 1px solid #444;
+            text-align: center;
         }
         
-        h1, h2, h3 {
-            color: #fff;
-            margin-bottom: 15px;
-        }
-        
-        .form-group {
+        h1 {
+            color: #00ff88;
             margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #fff;
+            margin: 20px 0 10px 0;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+        
+        .upload-area {
+            border: 2px dashed #555;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: #00ff88;
+            background: #333;
+        }
+        
+        .upload-area input {
+            display: none;
+        }
+        
+        .file-info {
+            background: #333;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 12px;
+            color: #ccc;
+        }
+        
+        button {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #00cc6a;
+            transform: translateY(-2px);
+        }
+        
+        button.secondary {
+            background: #555;
+            color: white;
+        }
+        
+        .config-group {
+            margin: 15px 0;
         }
         
         label {
@@ -68,93 +127,22 @@
             font-size: 14px;
         }
         
-        input, select, textarea {
+        input, select {
             width: 100%;
-            padding: 8px 12px;
-            background: #3d3d3d;
+            padding: 10px;
+            background: #333;
             border: 1px solid #555;
             border-radius: 4px;
-            color: #fff;
-            font-size: 14px;
-        }
-        
-        textarea {
-            height: 80px;
-            resize: vertical;
-            font-family: monospace;
-        }
-        
-        button {
-            background: #007acc;
             color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px 0;
-            width: 100%;
-            font-size: 14px;
         }
         
-        button:hover {
-            background: #005a9e;
-        }
-        
-        button.secondary {
-            background: #555;
-        }
-        
-        button.success {
-            background: #28a745;
-        }
-        
-        .file-info {
-            background: #3d3d3d;
+        .status {
+            background: #333;
             padding: 10px;
             border-radius: 4px;
             margin: 10px 0;
-            font-size: 12px;
-            color: #ccc;
-        }
-        
-        .code-preview {
-            background: #1e1e1e;
-            border: 1px solid #444;
-            border-radius: 4px;
-            padding: 15px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 12px;
-            color: #ccc;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .tab-buttons {
-            display: flex;
-            margin-bottom: 15px;
-        }
-        
-        .tab-button {
-            flex: 1;
-            background: #3d3d3d;
-            border: none;
-            padding: 10px;
-            color: #ccc;
-            cursor: pointer;
-        }
-        
-        .tab-button.active {
-            background: #007acc;
-            color: white;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
+            text-align: center;
+            font-size: 14px;
         }
         
         .loading {
@@ -163,163 +151,120 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            color: #ccc;
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 10px;
         }
         
-        .hidden {
-            display: none;
-        }
-        
-        .status-bar {
-            background: #007acc;
-            color: white;
-            padding: 5px 10px;
+        .debug-info {
+            background: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
             font-size: 12px;
+            color: #ccc;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Sidebar de Desenvolvimento -->
+        <!-- Painel de Controle -->
         <div class="sidebar">
-            <h2>🛠️ Desenvolvimento AR</h2>
+            <h1>🎮 STUDIO AR</h1>
             
-            <div class="tab-buttons">
-                <button class="tab-button active" onclick="showTab('assets')">Assets</button>
-                <button class="tab-button" onclick="showTab('config')">Configuração</button>
-                <button class="tab-button" onclick="showTab('export')">Exportar</button>
+            <h2>📁 CARREGAR ARQUIVOS</h2>
+            
+            <!-- Imagem Target -->
+            <div class="upload-area" onclick="document.getElementById('targetImage').click()">
+                🎯 CLIQUE PARA SELECIONAR IMAGEM TARGET
+                <input type="file" id="targetImage" accept="image/*" onchange="handleTargetImage(this.files[0])">
+            </div>
+            <div class="file-info" id="targetInfo">Nenhuma imagem selecionada</div>
+            
+            <!-- Modelo 3D -->
+            <div class="upload-area" onclick="document.getElementById('model3d').click()">
+                📦 CLIQUE PARA SELECIONAR MODELO 3D (GLB/GLTF)
+                <input type="file" id="model3d" accept=".glb,.gltf" onchange="handleModel3D(this.files[0])">
+            </div>
+            <div class="file-info" id="modelInfo">Nenhum modelo 3D selecionado</div>
+            
+            <!-- Áudio -->
+            <div class="upload-area" onclick="document.getElementById('audioFile').click()">
+                🔊 CLIQUE PARA SELECIONAR ÁUDIO (MP3)
+                <input type="file" id="audioFile" accept="audio/*" onchange="handleAudio(this.files[0])">
+            </div>
+            <div class="file-info" id="audioInfo">Nenhum áudio selecionado</div>
+            
+            <button onclick="loadAllAssets()">🚀 CARREGAR TODOS OS ARQUIVOS</button>
+            
+            <h2>⚙️ CONFIGURAÇÕES</h2>
+            
+            <div class="config-group">
+                <label>📏 Escala do Modelo:</label>
+                <input type="text" id="modelScale" value="0.1 0.1 0.1" onchange="updateModel()">
             </div>
             
-            <!-- Tab: Assets -->
-            <div id="assets-tab" class="tab-content active">
-                <div class="form-group">
-                    <label>🎯 Imagem Target (Marcador):</label>
-                    <input type="file" id="targetImage" accept="image/*">
-                    <div class="file-info" id="targetInfo">Nenhum arquivo selecionado</div>
-                </div>
-                
-                <div class="form-group">
-                    <label>📦 Modelo 3D (GLTF/GLB):</label>
-                    <input type="file" id="model3d" accept=".gltf,.glb,.fbx">
-                    <div class="file-info" id="modelInfo">Nenhum arquivo selecionado</div>
-                </div>
-                
-                <div class="form-group">
-                    <label>🔊 Áudio (MP3/WAV):</label>
-                    <input type="file" id="audioFile" accept="audio/*">
-                    <div class="file-info" id="audioInfo">Nenhum arquivo selecionado</div>
-                </div>
-                
-                <button onclick="loadAssets()">📥 Carregar Assets</button>
+            <div class="config-group">
+                <label>📍 Posição:</label>
+                <input type="text" id="modelPosition" value="0 0 0.1" onchange="updateModel()">
             </div>
             
-            <!-- Tab: Configuração -->
-            <div id="config-tab" class="tab-content">
-                <div class="form-group">
-                    <label>📏 Escala do Modelo:</label>
-                    <input type="text" id="modelScale" value="0.1 0.1 0.1" placeholder="x y z">
-                </div>
-                
-                <div class="form-group">
-                    <label>📍 Posição:</label>
-                    <input type="text" id="modelPosition" value="0 0 0.1" placeholder="x y z">
-                </div>
-                
-                <div class="form-group">
-                    <label>🔄 Rotação:</label>
-                    <input type="text" id="modelRotation" value="0 0 0" placeholder="x y z">
-                </div>
-                
-                <div class="form-group">
-                    <label>🎭 Animação:</label>
-                    <select id="animationType">
-                        <option value="none">Sem Animação</option>
-                        <option value="rotation">Rotação</option>
-                        <option value="bounce">Bounce</option>
-                        <option value="pulse">Pulse</option>
-                        <option value="custom">Customizada</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" id="customAnimationGroup" style="display: none;">
-                    <label>⚙️ Animação Customizada:</label>
-                    <textarea id="customAnimation" placeholder='property: rotation; to: 0 360 0; loop: true; dur: 5000'></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>🔊 Comportamento do Áudio:</label>
-                    <select id="audioBehavior">
-                        <option value="autoplay">Tocar automaticamente</option>
-                        <option value="onClick">Tocar ao clicar</option>
-                        <option value="loop">Loop contínuo</option>
-                    </select>
-                </div>
-                
-                <button onclick="applyConfig()">⚡ Aplicar Configurações</button>
+            <div class="config-group">
+                <label>🔄 Rotação:</label>
+                <input type="text" id="modelRotation" value="0 0 0" onchange="updateModel()">
             </div>
             
-            <!-- Tab: Exportar -->
-            <div id="export-tab" class="tab-content">
-                <div class="form-group">
-                    <label>🏷️ Nome do Projeto:</label>
-                    <input type="text" id="projectName" value="meu-projeto-ar">
-                </div>
-                
-                <div class="form-group">
-                    <label>📁 Exportar Como:</label>
-                    <select id="exportType">
-                        <option value="html">Arquivo HTML Único</option>
-                        <option value="zip">Projeto Completo (ZIP)</option>
-                    </select>
-                </div>
-                
-                <button class="success" onclick="generateProject()">📦 Gerar Projeto</button>
-                <button onclick="generateQRCode()">📱 Gerar QR Code</button>
-                
-                <div class="code-preview" id="codePreview">
-                    // Preview do código gerado aparecerá aqui
-                </div>
+            <div class="config-group">
+                <label>🎭 Animação:</label>
+                <select id="animationType" onchange="updateModel()">
+                    <option value="none">Sem Animação</option>
+                    <option value="rotate">Rotação Contínua</option>
+                    <option value="bounce">Pular</option>
+                    <option value="pulse">Pulsar</option>
+                </select>
+            </div>
+            
+            <div class="status" id="status">
+                ⏳ Aguardando arquivos...
+            </div>
+            
+            <div class="debug-info" id="debugInfo">
+                Debug: Nenhuma ação realizada
             </div>
         </div>
         
-        <!-- Área de Preview -->
+        <!-- Área de Visualização -->
         <div class="preview-area">
-            <div class="status-bar" id="statusBar">
-                Pronto para desenvolver - Faça upload dos assets para começar
+            <div id="loading" class="loading">
+                <h2>🛠️ STUDIO AR</h2>
+                <p>Carregue os arquivos no painel lateral para começar</p>
+                <p>🎯 Imagem Target + 📦 Modelo 3D + 🔊 Áudio</p>
             </div>
             
-            <div class="ar-container">
-                <div id="loading" class="loading">
-                    <p>⏳ Aguardando configuração...</p>
-                    <p>Use o painel lateral para carregar assets</p>
-                </div>
+            <a-scene 
+                id="ar-scene"
+                mindar-image="imageTargetSrc: #targetAsset; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
+                color-space="sRGB"
+                embedded
+                renderer="colorManagement: true, physicallyCorrectLights"
+                vr-mode-ui="enabled: false"
+                device-orientation-permission-ui="enabled: false">
                 
-                <a-scene 
-                    id="ar-scene"
-                    mindar-image="imageTargetSrc: #target; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
-                    color-space="sRGB"
-                    embedded
-                    renderer="colorManagement: true, physicallyCorrectLights"
-                    vr-mode-ui="enabled: false"
-                    device-orientation-permission-ui="enabled: false">
-                    
-                    <a-assets>
-                        <img id="target" crossOrigin="anonymous">
-                        <audio id="soundEffect" src=""></audio>
-                    </a-assets>
+                <a-assets>
+                    <img id="targetAsset" crossOrigin="anonymous">
+                    <audio id="audioAsset" preload="auto"></audio>
+                </a-assets>
 
-                    <a-camera active="false" position="0 0 0"></a-camera>
+                <a-camera active="false" position="0 0 0"></a-camera>
 
-                    <a-entity mindar-image-target="targetIndex: 0">
-                        <!-- Modelo 3D será inserido aqui -->
-                    </a-entity>
-                </a-scene>
-            </div>
+                <a-entity mindar-image-target="targetIndex: 0">
+                    <!-- Modelo será inserido aqui -->
+                </a-entity>
+            </a-scene>
             
             <div class="controls">
-                <button onclick="startAR()">🎥 IniciAR AR</button>
-                <button class="secondary" onclick="stopAR()">⏹️ ParAR AR</button>
-                <button onclick="screenshot()">📸 Capturar Tela</button>
+                <button onclick="startAR()">📷 INICIAR REALIDADE AUMENTADA</button>
+                <button class="secondary" onclick="stopAR()">⏹️ PARAR CÂMERA</button>
             </div>
         </div>
     </div>
@@ -331,84 +276,64 @@
             audio: null
         };
 
-        // Sistema de tabs
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
+        // Funções de upload
+        function handleTargetImage(file) {
+            if (file) {
+                currentAssets.targetImage = file;
+                document.getElementById('targetInfo').textContent = 
+                    `✅ ${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+                updateDebug('Imagem target carregada: ' + file.name);
+            }
         }
 
-        // Gerenciamento de arquivos
-        document.getElementById('targetImage').addEventListener('change', function(e) {
-            const file = e.target.files[0];
+        function handleModel3D(file) {
             if (file) {
-                document.getElementById('targetInfo').textContent = 
-                    `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
-                currentAssets.targetImage = file;
-            }
-        });
-
-        document.getElementById('model3d').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                document.getElementById('modelInfo').textContent = 
-                    `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
                 currentAssets.model3d = file;
+                document.getElementById('modelInfo').textContent = 
+                    `✅ ${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+                updateDebug('Modelo 3D carregado: ' + file.name);
             }
-        });
+        }
 
-        document.getElementById('audioFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
+        function handleAudio(file) {
             if (file) {
-                document.getElementById('audioInfo').textContent = 
-                    `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
                 currentAssets.audio = file;
+                document.getElementById('audioInfo').textContent = 
+                    `✅ ${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+                updateDebug('Áudio carregado: ' + file.name);
             }
-        });
+        }
 
-        // Toggle animação customizada
-        document.getElementById('animationType').addEventListener('change', function(e) {
-            document.getElementById('customAnimationGroup').style.display = 
-                e.target.value === 'custom' ? 'block' : 'none';
-        });
-
-        // Carregar assets na cena
-        function loadAssets() {
+        // Carregar todos os assets
+        function loadAllAssets() {
             if (!currentAssets.targetImage) {
-                alert('Selecione uma imagem target primeiro!');
+                alert('❌ Selecione uma imagem target primeiro!');
                 return;
             }
 
-            const statusBar = document.getElementById('statusBar');
-            statusBar.textContent = 'Carregando assets...';
+            updateStatus('🔄 Carregando assets...');
+            updateDebug('Iniciando carregamento de assets');
 
             // Carregar imagem target
-            const targetElement = document.getElementById('target');
+            const targetElement = document.getElementById('targetAsset');
             const reader = new FileReader();
             
             reader.onload = function(e) {
                 targetElement.src = e.target.result;
+                updateDebug('Imagem target convertida para base64');
                 
-                // Configurar cena básica
-                setupScene();
-                
-                document.getElementById('loading').classList.add('hidden');
-                statusBar.textContent = 'Assets carregados! AplicAR configurações ou iniciAR AR.';
-                
-                // Gerar preview do código
-                generateCodePreview();
+                // Forçar atualização da cena
+                setTimeout(() => {
+                    setupScene();
+                    updateStatus('✅ Assets carregados! Pronto para AR');
+                    document.getElementById('loading').style.display = 'none';
+                }, 1000);
             };
             
             reader.readAsDataURL(currentAssets.targetImage);
         }
 
-        // Configurar cena AR
+        // Configurar cena
         function setupScene() {
             const scene = document.getElementById('ar-scene');
             const targetEntity = scene.querySelector('[mindar-image-target]');
@@ -416,27 +341,38 @@
             // Limpar cena anterior
             targetEntity.innerHTML = '';
             
-            // Adicionar modelo básico (será substituído por configuração)
-            const box = document.createElement('a-box');
-            box.setAttribute('color', '#4CC3D9');
-            box.setAttribute('position', '0 0 0.1');
-            box.setAttribute('scale', '0.1 0.1 0.1');
-            targetEntity.appendChild(box);
+            // Criar modelo básico (cubo colorido)
+            const model = document.createElement('a-box');
+            model.setAttribute('color', '#FF6B6B');
+            model.setAttribute('position', '0 0 0.1');
+            model.setAttribute('scale', '0.1 0.1 0.1');
+            model.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 5000');
+            
+            targetEntity.appendChild(model);
+            updateDebug('Cena configurada com modelo básico');
         }
 
-        // Aplicar configurações
-        function applyConfig() {
+        // Atualizar modelo
+        function updateModel() {
             const scene = document.getElementById('ar-scene');
             const targetEntity = scene.querySelector('[mindar-image-target]');
+            
+            if (targetEntity.children.length === 0) {
+                updateDebug('Nenhum modelo na cena para atualizar');
+                return;
+            }
+            
             const model = targetEntity.children[0];
-            
-            // Aplicar transformações
-            model.setAttribute('scale', document.getElementById('modelScale').value);
-            model.setAttribute('position', document.getElementById('modelPosition').value);
-            model.setAttribute('rotation', document.getElementById('modelRotation').value);
-            
-            // Aplicar animação
+            const scale = document.getElementById('modelScale').value;
+            const position = document.getElementById('modelPosition').value;
+            const rotation = document.getElementById('modelRotation').value;
             const animationType = document.getElementById('animationType').value;
+            
+            model.setAttribute('scale', scale);
+            model.setAttribute('position', position);
+            model.setAttribute('rotation', rotation);
+            
+            // Atualizar animação
             if (animationType !== 'none') {
                 const animationConfig = getAnimationConfig(animationType);
                 model.setAttribute('animation', animationConfig);
@@ -444,15 +380,14 @@
                 model.removeAttribute('animation');
             }
             
-            generateCodePreview();
+            updateDebug(`Modelo atualizado: S${scale} P${position} R${rotation} A${animationType}`);
         }
 
         function getAnimationConfig(type) {
             const configs = {
-                rotation: 'property: rotation; to: 0 360 0; loop: true; dur: 5000',
+                rotate: 'property: rotation; to: 0 360 0; loop: true; dur: 5000',
                 bounce: 'property: position; to: 0 0.2 0.1; dir: alternate; loop: true; dur: 1000',
-                pulse: 'property: scale; to: 0.15 0.15 0.15; dir: alternate; loop: true; dur: 800',
-                custom: document.getElementById('customAnimation').value
+                pulse: 'property: scale; to: 0.15 0.15 0.15; dir: alternate; loop: true; dur: 800'
             };
             return configs[type] || '';
         }
@@ -461,90 +396,37 @@
         function startAR() {
             const scene = document.getElementById('ar-scene');
             const arSystem = scene.systems["mindar-image-system"];
-            arSystem.start();
-            document.getElementById('statusBar').textContent = 'AR ativo - Aponte para o target';
+            
+            arSystem.start().then(() => {
+                updateStatus('📱 AR ATIVO - Aponte para o target');
+                updateDebug('Sistema AR iniciado com sucesso');
+            }).catch(err => {
+                updateStatus('❌ Erro ao iniciAR AR: ' + err.message);
+                updateDebug('Erro: ' + err.message);
+            });
         }
 
         function stopAR() {
             const scene = document.getElementById('ar-scene');
             const arSystem = scene.systems["mindar-image-system"];
             arSystem.stop();
-            document.getElementById('statusBar').textContent = 'AR parado';
+            updateStatus('⏹️ AR parado');
+            updateDebug('Sistema AR parado');
         }
 
-        function screenshot() {
-            alert('Funcionalidade de screenshot será implementada!');
+        // Utilitários
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
         }
 
-        // Gerar preview do código
-        function generateCodePreview() {
-            const scale = document.getElementById('modelScale').value;
-            const position = document.getElementById('modelPosition').value;
-            const rotation = document.getElementById('modelRotation').value;
-            const animation = document.getElementById('animationType').value;
-            
-            const code = `
-<a-entity mindar-image-target="targetIndex: 0">
-    <a-box
-        color="#4CC3D9"
-        position="${position}"
-        rotation="${rotation}"
-        scale="${scale}"
-        ${animation !== 'none' ? `animation="${getAnimationConfig(animation)}"` : ''}
-    ></a-box>
-</a-entity>`;
-            
-            document.getElementById('codePreview').textContent = code;
-        }
-
-        // Gerar projeto
-        function generateProject() {
-            const projectName = document.getElementById('projectName').value || 'meu-projeto-ar';
-            const exportType = document.getElementById('exportType').value;
-            
-            if (exportType === 'html') {
-                generateHTMLFile(projectName);
-            } else {
-                alert('Exportação ZIP será implementada em breve!');
-            }
-        }
-
-        function generateHTMLFile(projectName) {
-            const htmlContent = generateCompleteHTML();
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${projectName}.html`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function generateCompleteHTML() {
-            // Aqui você geraria o HTML completo com todas as configurações
-            return `<!DOCTYPE html>
-<html>
-<head>
-    <title>Projeto AR</title>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mind-ar-image.prod.js"></script>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mind-ar-image-aframe.prod.js"></script>
-</head>
-<body>
-    <a-scene mindar-image="imageTargetSrc: assets/target.mind" ...>
-        <!-- Sua cena AR aqui -->
-    </a-scene>
-</body>
-</html>`;
-        }
-
-        function generateQRCode() {
-            alert('QR Code será gerado para a URL do projeto quando hospedado!');
+        function updateDebug(message) {
+            document.getElementById('debugInfo').textContent = 'Debug: ' + message;
+            console.log('AR Debug:', message);
         }
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Ferramenta de desenvolvimento AR carregada!');
+            updateDebug('Studio AR inicializado');
         });
     </script>
 </body>
