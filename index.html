@@ -1,634 +1,270 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma AR - Crie Sua Realidade Aumentada</title>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image.prod.js"></script>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: white;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .app-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .editor-panel {
-            padding: 25px;
-            background: #f8f9fa;
-        }
-
-        .preview-panel {
-            padding: 25px;
-            background: #2c3e50;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .panel-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: #2c3e50;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .preview-panel .panel-title {
-            color: white;
-            border-bottom-color: #4CAF50;
-        }
-
-        .upload-section {
-            margin-bottom: 25px;
-        }
-
-        .upload-item {
-            margin-bottom: 15px;
-        }
-
-        .upload-item label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .file-input {
-            width: 100%;
-            padding: 10px;
-            border: 2px dashed #ced4da;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .file-input:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-
-        .transform-controls {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .control-group {
-            margin-bottom: 15px;
-        }
-
-        .control-group h4 {
-            margin-bottom: 10px;
-            color: #495057;
-            font-size: 1rem;
-        }
-
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .slider-container label {
-            min-width: 60px;
-            font-size: 0.9rem;
-        }
-
-        input[type="range"] {
-            flex: 1;
-            height: 6px;
-            border-radius: 3px;
-            background: #e9ecef;
-            outline: none;
-        }
-
-        .value-display {
-            min-width: 40px;
-            text-align: center;
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        #ar-preview {
-            width: 100%;
-            height: 400px;
-            background: #1a1a1a;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .preview-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #6c757d;
-            background: #343a40;
-            border-radius: 10px;
-        }
-
-        .preview-placeholder i {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            opacity: 0.7;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            flex: 1;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5a6fd8;
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-        }
-
-        .qr-section {
-            margin-top: 20px;
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        #qrcode {
-            display: inline-block;
-            margin: 15px 0;
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
-        }
-
-        .download-link {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: 600;
-        }
-
-        .status-message {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        @media (max-width: 768px) {
-            .app-container {
-                grid-template-columns: 1fr;
-            }
-            
-            header h1 {
-                font-size: 2rem;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MindAR — Plataforma AR (Protótipo)</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;display:flex;gap:12px;height:100vh}
+    #left{width:420px;padding:12px;box-sizing:border-box;overflow:auto;border-right:1px solid #ddd}
+    #right{flex:1;display:flex;flex-direction:column}
+    label{display:block;margin-top:8px;font-weight:600}
+    input[type=file]{width:100%}
+    .row{display:flex;gap:8px}
+    .control{margin-top:6px}
+    canvas{width:100%;height:100%;background:#000}
+    button{margin-top:10px;padding:8px 12px}
+    .small{font-size:13px;color:#666}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🔄 Plataforma de Realidade Aumentada</h1>
-            <p>Crie experiências AR incríveis para seus clientes de forma simples</p>
-        </header>
+  <div id="left">
+    <h2>Editor AR — Protótipo</h2>
+    <p class="small">Fluxo: (A) Compile seu target com o <strong>Image Targets Compiler</strong> do MindAR (gera arquivo <code>.mind</code>) — OU — faça upload do .mind já gerado. (B) Faça upload do modelo (GLB recomendado; FBX suportado). (C) Adicione áudio (mp3). (D) Ajuste posição/escala/rotação. (E) Exporte pacote para hospedagem (gera ZIP para publicação) e QR Code para o link hospedado.</p>
 
-        <div class="app-container">
-            <div class="editor-panel">
-                <h2 class="panel-title">Editor AR</h2>
-                
-                <div class="upload-section">
-                    <div class="upload-item">
-                        <label for="target-image">Imagem Target (Trigger):</label>
-                        <input type="file" id="target-image" class="file-input" accept="image/*">
-                    </div>
-                    
-                    <div class="upload-item">
-                        <label for="model-3d">Modelo 3D (FBX/GLB):</label>
-                        <input type="file" id="model-3d" class="file-input" accept=".fbx,.glb">
-                    </div>
-                    
-                    <div class="upload-item">
-                        <label for="audio-file">Áudio (MP3):</label>
-                        <input type="file" id="audio-file" class="file-input" accept="audio/mp3">
-                    </div>
-                </div>
+    <label>1) Upload do arquivo target (.mind) gerado pelo <em>Image Targets Compiler</em>:</label>
+    <input id="mindFile" type="file" accept=".mind" />
+    <div class="small control">Não tem .mind? Vá em <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank">Image Targets Compiler (MindAR)</a> e faça o upload da imagem para baixar o .mind</div>
 
-                <div class="transform-controls">
-                    <h3>Controles do Modelo 3D</h3>
-                    
-                    <div class="control-group">
-                        <h4>Posição</h4>
-                        <div class="slider-container">
-                            <label>X:</label>
-                            <input type="range" id="pos-x" min="-5" max="5" step="0.1" value="0">
-                            <span class="value-display" id="pos-x-value">0</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Y:</label>
-                            <input type="range" id="pos-y" min="-5" max="5" step="0.1" value="0">
-                            <span class="value-display" id="pos-y-value">0</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Z:</label>
-                            <input type="range" id="pos-z" min="-5" max="5" step="0.1" value="0">
-                            <span class="value-display" id="pos-z-value">0</span>
-                        </div>
-                    </div>
+    <label>2) Upload da imagem do target (opcional — para visualização)</label>
+    <input id="targetImage" type="file" accept="image/*" />
 
-                    <div class="control-group">
-                        <h4>Rotação</h4>
-                        <div class="slider-container">
-                            <label>X:</label>
-                            <input type="range" id="rot-x" min="0" max="360" step="1" value="0">
-                            <span class="value-display" id="rot-x-value">0°</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Y:</label>
-                            <input type="range" id="rot-y" min="0" max="360" step="1" value="0">
-                            <span class="value-display" id="rot-y-value">0°</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Z:</label>
-                            <input type="range" id="rot-z" min="0" max="360" step="1" value="0">
-                            <span class="value-display" id="rot-z-value">0°</span>
-                        </div>
-                    </div>
+    <label>3) Modelo 3D (GLB recomendado, FBX também)</label>
+    <input id="modelFile" type="file" accept=".glb,.gltf,.fbx" />
 
-                    <div class="control-group">
-                        <h4>Escala</h4>
-                        <div class="slider-container">
-                            <label>X:</label>
-                            <input type="range" id="scale-x" min="0.1" max="3" step="0.1" value="1">
-                            <span class="value-display" id="scale-x-value">1</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Y:</label>
-                            <input type="range" id="scale-y" min="0.1" max="3" step="0.1" value="1">
-                            <span class="value-display" id="scale-y-value">1</span>
-                        </div>
-                        <div class="slider-container">
-                            <label>Z:</label>
-                            <input type="range" id="scale-z" min="0.1" max="3" step="0.1" value="1">
-                            <span class="value-display" id="scale-z-value">1</span>
-                        </div>
-                    </div>
-                </div>
+    <label>4) Áudio (MP3)</label>
+    <input id="audioFile" type="file" accept="audio/mpeg" />
 
-                <div class="action-buttons">
-                    <button id="preview-btn" class="btn-primary">Visualizar AR</button>
-                    <button id="generate-btn" class="btn-success">Gerar Experiência AR</button>
-                </div>
+    <hr />
 
-                <div id="status-message"></div>
-            </div>
-
-            <div class="preview-panel">
-                <h2 class="panel-title">Preview</h2>
-                <div id="ar-preview">
-                    <div class="preview-placeholder">
-                        <i>📱</i>
-                        <p>Faça upload dos arquivos e clique em "Visualizar AR"</p>
-                    </div>
-                </div>
-
-                <div class="qr-section" id="qr-section" style="display: none;">
-                    <h3>📲 Compartilhe sua Experiência AR</h3>
-                    <p>Escaneie o QR Code com seu smartphone:</p>
-                    <div id="qrcode"></div>
-                    <p>Ou compartilhe este link:</p>
-                    <a href="#" id="ar-link" class="download-link" target="_blank">Abrir Experiência AR</a>
-                </div>
-            </div>
-        </div>
+    <h3>Ajustes do modelo</h3>
+    <div class="row">
+      <div>
+        <label>Posição X Y Z (m)</label>
+        <input id="posX" type="number" step="0.01" value="0" placeholder="X" />
+        <input id="posY" type="number" step="0.01" value="0" placeholder="Y" />
+        <input id="posZ" type="number" step="0.01" value="0.1" placeholder="Z" />
+      </div>
+    </div>
+    <div class="row control">
+      <div>
+        <label>Escala X Y Z</label>
+        <input id="scaleX" type="number" step="0.01" value="1" />
+        <input id="scaleY" type="number" step="0.01" value="1" />
+        <input id="scaleZ" type="number" step="0.01" value="1" />
+      </div>
+    </div>
+    <div class="row control">
+      <div>
+        <label>Rotação X Y Z (deg)</label>
+        <input id="rotX" type="number" step="1" value="0" />
+        <input id="rotY" type="number" step="1" value="0" />
+        <input id="rotZ" type="number" step="1" value="0" />
+      </div>
     </div>
 
-    <script>
-        // Elementos da interface
-        const targetImageInput = document.getElementById('target-image');
-        const model3dInput = document.getElementById('model-3d');
-        const audioInput = document.getElementById('audio-file');
-        const previewBtn = document.getElementById('preview-btn');
-        const generateBtn = document.getElementById('generate-btn');
-        const arPreview = document.getElementById('ar-preview');
-        const qrSection = document.getElementById('qr-section');
-        const statusMessage = document.getElementById('status-message');
+    <button id="previewBtn">Visualizar na página</button>
+    <button id="exportZip">Exportar pacote (ZIP)</button>
 
-        // Controles de transformação
-        const posX = document.getElementById('pos-x');
-        const posY = document.getElementById('pos-y');
-        const posZ = document.getElementById('pos-z');
-        const rotX = document.getElementById('rot-x');
-        const rotY = document.getElementById('rot-y');
-        const rotZ = document.getElementById('rot-z');
-        const scaleX = document.getElementById('scale-x');
-        const scaleY = document.getElementById('scale-y');
-        const scaleZ = document.getElementById('scale-z');
+    <div style="margin-top:12px">
+      <label>Gerar link (hosted) / QR</label>
+      <input id="hostedUrl" type="text" placeholder="Cole aqui a URL após hospedar o ZIP extraído" style="width:100%" />
+      <button id="genQR">Gerar QR Code</button>
+      <div id="qrcode" style="margin-top:8px"></div>
+    </div>
 
-        // Valores exibidos
-        const posXValue = document.getElementById('pos-x-value');
-        const posYValue = document.getElementById('pos-y-value');
-        const posZValue = document.getElementById('pos-z-value');
-        const rotXValue = document.getElementById('rot-x-value');
-        const rotYValue = document.getElementById('rot-y-value');
-        const rotZValue = document.getElementById('rot-z-value');
-        const scaleXValue = document.getElementById('scale-x-value');
-        const scaleYValue = document.getElementById('scale-y-value');
-        const scaleZValue = document.getElementById('scale-z-value');
+    <hr />
+    <div class="small">
+      <strong>Notas importantes:</strong>
+      <ul>
+        <li>MindAR requer que você compile o target (.mind) — o compilador está em: <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank">Image Targets Compiler</a>.</li>
+        <li>Este protótipo exporta um pacote estático (HTML + assets) que você deverá hospedar em um servidor estático (GitHub Pages, Netlify, Vercel, S3, etc.).</li>
+        <li>Para usar FBX, o viewer usa <code>FBXLoader</code>. GLB/GLTF é recomendado por menor tamanho e melhor compatibilidade.</li>
+      </ul>
+    </div>
+  </div>
 
-        // Variáveis para armazenar os arquivos
-        let targetImageFile = null;
-        let model3dFile = null;
-        let audioFile = null;
+  <div id="right">
+    <div style="flex:1;position:relative">
+      <iframe id="previewFrame" style="width:100%;height:100%;border:0" title="preview"></iframe>
+    </div>
+  </div>
 
-        // Atualizar valores dos controles
-        function updateControlValues() {
-            posXValue.textContent = posX.value;
-            posYValue.textContent = posY.value;
-            posZValue.textContent = posZ.value;
-            rotXValue.textContent = rotX.value + '°';
-            rotYValue.textContent = rotY.value + '°';
-            rotZValue.textContent = rotZ.value + '°';
-            scaleXValue.textContent = scaleX.value;
-            scaleYValue.textContent = scaleY.value;
-            scaleZValue.textContent = scaleZ.value;
-        }
+  <!-- Dependências usadas na geração ZIP e QR: jszip + qrcode -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 
-        // Inicializar atualização dos valores
-        [posX, posY, posZ, rotX, rotY, rotZ, scaleX, scaleY, scaleZ].forEach(input => {
-            input.addEventListener('input', updateControlValues);
-        });
-        updateControlValues();
+  <script>
+    // Funções utilitárias
+    const $ = id => document.getElementById(id);
 
-        // Gerenciar upload de arquivos
-        targetImageInput.addEventListener('change', (e) => {
-            targetImageFile = e.target.files[0];
-            showStatus('Imagem target carregada com sucesso!', 'success');
-        });
+    async function fileToArrayBuffer(file){ return await file.arrayBuffer(); }
+    async function fileToDataUrl(file){ return new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(file); }); }
 
-        model3dInput.addEventListener('change', (e) => {
-            model3dFile = e.target.files[0];
-            showStatus('Modelo 3D carregado com sucesso!', 'success');
-        });
-
-        audioInput.addEventListener('change', (e) => {
-            audioFile = e.target.files[0];
-            showStatus('Áudio carregado com sucesso!', 'success');
-        });
-
-        // Função para mostrar mensagens de status
-        function showStatus(message, type) {
-            statusMessage.textContent = message;
-            statusMessage.className = 'status-message';
-            statusMessage.classList.add(type === 'success' ? 'status-success' : 'status-error');
-            statusMessage.style.display = 'block';
-            
-            setTimeout(() => {
-                statusMessage.style.display = 'none';
-            }, 3000);
-        }
-
-        // Visualizar experiência AR
-        previewBtn.addEventListener('click', () => {
-            if (!targetImageFile || !model3dFile) {
-                showStatus('Por favor, faça upload da imagem target e do modelo 3D.', 'error');
-                return;
-            }
-
-            // Criar URLs temporárias para os arquivos
-            const targetImageUrl = URL.createObjectURL(targetImageFile);
-            const model3dUrl = URL.createObjectURL(model3dFile);
-            const audioUrl = audioFile ? URL.createObjectURL(audioFile) : null;
-
-            // Criar cena AR
-            arPreview.innerHTML = `
-                <a-scene 
-                    mindar-image="imageTargetSrc: ${targetImageUrl}; autoStart: true; uiLoading: no; uiScanning: no;" 
-                    color-space="sRGB" 
-                    embedded 
-                    renderer="colorManagement: true, physicallyCorrectLights"
-                    vr-mode-ui="enabled: false" 
-                    device-orientation-permission-ui="enabled: false">
-                    
-                    <a-assets>
-                        <a-asset-item id="model" src="${model3dUrl}"></a-asset-item>
-                        ${audioUrl ? `<audio id="audio" src="${audioUrl}"></audio>` : ''}
-                    </a-assets>
-
-                    <a-camera active="true" position="0 0 0" look-controls="enabled: false"></a-camera>
-
-                    <a-entity mindar-image-target="targetIndex: 0">
-                        <a-entity 
-                            gltf-model="#model"
-                            position="${posX.value} ${posY.value} ${posZ.value}"
-                            rotation="${rotX.value} ${rotY.value} ${rotZ.value}"
-                            scale="${scaleX.value} ${scaleY.value} ${scaleZ.value}"
-                            ${audioUrl ? 'sound="src: #audio; autoplay: true"' : ''}>
-                        </a-entity>
-                    </a-entity>
-                </a-scene>
-            `;
-
-            showStatus('Experiência AR carregada! Aponte a câmera para a imagem target.', 'success');
-        });
-
-        // Gerar experiência AR final
-        generateBtn.addEventListener('click', () => {
-            if (!targetImageFile || !model3dFile) {
-                showStatus('Por favor, faça upload da imagem target e do modelo 3D.', 'error');
-                return;
-            }
-
-            // Criar página HTML completa para a experiência AR
-            const arExperienceHTML = `
-<!DOCTYPE html>
+    // Cria um viewer HTML (string) que será incluído no ZIP
+    function makeViewerHTML(config){
+      return `<!doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiência AR</title>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image.prod.js"></script>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        #loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        .ar-container {
-            width: 100%;
-            height: 100vh;
-            position: relative;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AR Viewer</title>
+<style>body{margin:0}canvas{display:block}</style>
 </head>
 <body>
-    <div id="loading">
-        <h2>Carregando Experiência AR...</h2>
-        <p>Por favor, aguarde</p>
-    </div>
+<script type="module">
+  import * as THREE from 'https://unpkg.com/three@0.150.0/build/three.module.js';
+  import { GLTFLoader } from 'https://unpkg.com/three@0.150.0/examples/jsm/loaders/GLTFLoader.js';
+  import { FBXLoader } from 'https://unpkg.com/three@0.150.0/examples/jsm/loaders/FBXLoader.js';
+  import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js';
 
-    <div class="ar-container">
-        <a-scene 
-            mindar-image="imageTargetSrc: ${URL.createObjectURL(targetImageFile)}; autoStart: true; uiLoading: no; uiScanning: no;" 
-            color-space="sRGB" 
-            embedded 
-            renderer="colorManagement: true, physicallyCorrectLights"
-            vr-mode-ui="enabled: false" 
-            device-orientation-permission-ui="enabled: false">
-            
-            <a-assets>
-                <a-asset-item id="model" src="${URL.createObjectURL(model3dFile)}"></a-asset-item>
-                ${audioFile ? `<audio id="audio" src="${URL.createObjectURL(audioFile)}"></audio>` : ''}
-            </a-assets>
+  const mind = new MindARThree({ container: document.body, imageTargetSrc: './${config.mindFilename}' });
+  const { renderer, scene, camera } = mind;
 
-            <a-camera active="true" position="0 0 0" look-controls="enabled: false"></a-camera>
+  const anchor = mind.addAnchor(0);
 
-            <a-entity mindar-image-target="targetIndex: 0">
-                <a-entity 
-                    gltf-model="#model"
-                    position="${posX.value} ${posY.value} ${posZ.value}"
-                    rotation="${rotX.value} ${rotY.value} ${rotZ.value}"
-                    scale="${scaleX.value} ${scaleY.value} ${scaleZ.value}"
-                    ${audioFile ? 'sound="src: #audio; autoplay: true"' : ''}>
-                </a-entity>
-            </a-entity>
-        </a-scene>
-    </div>
+  // carregamento do modelo
+  async function loadModel(){
+    const modelPath = './${config.modelFilename}';
+    let obj;
+    if(modelPath.toLowerCase().endsWith('.glb')||modelPath.toLowerCase().endsWith('.gltf')){
+      const loader = new GLTFLoader();
+      const gltf = await loader.loadAsync(modelPath);
+      obj = gltf.scene;
+    } else if(modelPath.toLowerCase().endsWith('.fbx')){
+      const loader = new FBXLoader();
+      obj = loader.parse(await (await fetch(modelPath)).arrayBuffer());
+    }
+    obj.position.set(${config.posX}, ${config.posY}, ${config.posZ});
+    obj.scale.set(${config.scaleX}, ${config.scaleY}, ${config.scaleZ});
+    obj.rotation.set(${config.rotX} * Math.PI/180, ${config.rotY}*Math.PI/180, ${config.rotZ}*Math.PI/180);
+    anchor.group.add(obj);
 
-    <script>
-        // Remover tela de loading quando a cena estiver carregada
-        document.querySelector('a-scene').addEventListener('loaded', function() {
-            document.getElementById('loading').style.display = 'none';
-        });
-    </script>
+    // audio
+    if(${config.audioPresent}){
+      const listener = new THREE.AudioListener();
+      camera.add( listener );
+      const audio = new THREE.PositionalAudio( listener );
+      const response = await fetch('./${config.audioFilename}');
+      const arrayBuffer = await response.arrayBuffer();
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const buff = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+      const bufferSource = audioCtx.createBufferSource();
+      // we'll use simple playback via HTMLAudioElement to keep compatibility
+      const audioEl = document.createElement('audio');
+      audioEl.src = './${config.audioFilename}';
+      audioEl.controls = true; audioEl.style.position='fixed'; audioEl.style.left='8px'; audioEl.style.top='8px';
+      document.body.appendChild(audioEl);
+    }
+  }
+
+  await loadModel();
+
+  await mind.start();
+  renderer.setAnimationLoop( ()=>{ renderer.render(scene, camera); });
+<\/script>
 </body>
 </html>`;
+    }
 
-            // Criar blob e URL para a experiência AR
-            const blob = new Blob([arExperienceHTML], { type: 'text/html' });
-            const arExperienceUrl = URL.createObjectURL(blob);
+    // Prepara dados para export
+    $('exportZip').addEventListener('click', async ()=>{
+      const mindFile = $('mindFile').files[0];
+      const modelFile = $('modelFile').files[0];
+      const audioFile = $('audioFile').files[0];
+      if(!mindFile || !modelFile){ alert('Envie pelo menos o arquivo .mind e o modelo 3D'); return; }
 
-            // Gerar QR Code
-            document.getElementById('qrcode').innerHTML = '';
-            new QRCode(document.getElementById('qrcode'), {
-                text: arExperienceUrl,
-                width: 200,
-                height: 200,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
+      const cfg = {
+        mindFilename: mindFile.name,
+        modelFilename: modelFile.name,
+        audioFilename: audioFile ? audioFile.name : '',
+        posX: parseFloat($('posX').value)||0,
+        posY: parseFloat($('posY').value)||0,
+        posZ: parseFloat($('posZ').value)||0.1,
+        scaleX: parseFloat($('scaleX').value)||1,
+        scaleY: parseFloat($('scaleY').value)||1,
+        scaleZ: parseFloat($('scaleZ').value)||1,
+        rotX: parseFloat($('rotX').value)||0,
+        rotY: parseFloat($('rotY').value)||0,
+        rotZ: parseFloat($('rotZ').value)||0,
+        audioPresent: audioFile ? true : false
+      };
 
-            // Atualizar link
-            document.getElementById('ar-link').href = arExperienceUrl;
-            qrSection.style.display = 'block';
+      const zip = new JSZip();
+      zip.file('viewer.html', makeViewerHTML(cfg));
+      zip.file('config.json', JSON.stringify(cfg, null, 2));
 
-            showStatus('Experiência AR gerada com sucesso! Compartilhe o QR Code ou link.', 'success');
-        });
-    </script>
+      zip.file(mindFile.name, await fileToArrayBuffer(mindFile));
+      zip.file(modelFile.name, await fileToArrayBuffer(modelFile));
+      if(audioFile) zip.file(audioFile.name, await fileToArrayBuffer(audioFile));
+
+      const content = await zip.generateAsync({type:'blob'});
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a'); a.href = url; a.download = 'ar_package.zip'; a.click();
+    });
+
+    // Preview: cria um pacote temporário in-memory e carrega no iframe usando object URLs
+    $('previewBtn').addEventListener('click', async ()=>{
+      const mindFile = $('mindFile').files[0];
+      const modelFile = $('modelFile').files[0];
+      const audioFile = $('audioFile').files[0];
+      if(!mindFile || !modelFile){ alert('Envie .mind e modelo para pré-visualizar'); return; }
+
+      const cfg = {
+        mindFilename: mindFile.name,
+        modelFilename: modelFile.name,
+        audioFilename: audioFile ? audioFile.name : '',
+        posX: parseFloat($('posX').value)||0,
+        posY: parseFloat($('posY').value)||0,
+        posZ: parseFloat($('posZ').value)||0.1,
+        scaleX: parseFloat($('scaleX').value)||1,
+        scaleY: parseFloat($('scaleY').value)||1,
+        scaleZ: parseFloat($('scaleZ').value)||1,
+        rotX: parseFloat($('rotX').value)||0,
+        rotY: parseFloat($('rotY').value)||0,
+        rotZ: parseFloat($('rotZ').value)||0,
+        audioPresent: audioFile ? true : false
+      };
+
+      const zip = new JSZip();
+      zip.file('viewer.html', makeViewerHTML(cfg));
+      zip.file(mindFile.name, await fileToArrayBuffer(mindFile));
+      zip.file(modelFile.name, await fileToArrayBuffer(modelFile));
+      if(audioFile) zip.file(audioFile.name, await fileToArrayBuffer(audioFile));
+      const blob = await zip.generateAsync({type:'blob'});
+      const url = URL.createObjectURL(blob);
+
+      // create a blob URL for the zip, then open in iframe using a tiny in-memory filesystem via JS
+      // Simpler: extract in memory and serve viewer.html via blob URL with assets as separate blob URLs by mapping names to blob URLs.
+      // We'll extract files and create a small HTML that fetches assets via blob URLs.
+      const z = await JSZip.loadAsync(blob);
+      const fileMap = {};
+      for(const f of Object.keys(z.files)){
+        if(f==='viewer.html') continue;
+        const data = await z.file(f).async('blob');
+        fileMap[f] = URL.createObjectURL(data);
+      }
+      let viewer = await z.file('viewer.html').async('string');
+      // replace asset references like ./name with blob urls
+      for(const name of Object.keys(fileMap)){
+        const re = new RegExp("\\.\/" + name.replace(/[.*+?^${}()|[\]\\]/g,'\\\\$&'), 'g');
+        viewer = viewer.replace(re, fileMap[name]);
+      }
+      const viewerBlob = new Blob([viewer], {type:'text/html'});
+      const viewerUrl = URL.createObjectURL(viewerBlob);
+      $('previewFrame').src = viewerUrl;
+    });
+
+    // QR generation: user provides a hosted URL (after uploading the exported package)
+    $('genQR').addEventListener('click', ()=>{
+      const u = $('hostedUrl').value.trim();
+      if(!u) return alert('Cole a URL pública do viewer após hospedar o pacote');
+      QRCode.toDataURL(u).then(dataUrl=>{
+        const img = document.createElement('img'); img.src = dataUrl; img.style.maxWidth='200px';
+        $('qrcode').innerHTML=''; $('qrcode').appendChild(img);
+      });
+    });
+
+  </script>
 </body>
 </html>
