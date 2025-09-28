@@ -1,98 +1,134 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR Simulado com TransformControls</title>
-  <style>
-    body { margin:0; overflow:hidden; }
-    #info { position:absolute; top:10px; left:10px; color:white; background:rgba(0,0,0,0.5); padding:8px; font-family:sans-serif; z-index:10; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor AR</title>
+<style>
+  body { margin:0; overflow:hidden; }
+  #info { position:absolute; top:10px; left:10px; color:white; background:rgba(0,0,0,0.5); padding:8px; font-family:sans-serif; z-index:10; }
+  #controls { position:absolute; top:50px; left:10px; background:rgba(0,0,0,0.5); padding:10px; z-index:10; }
+</style>
 </head>
 <body>
-<div id="info">
-  Teclas: 1=Mover | 2=Rotacionar | 3=Escalar
+
+<div id="info">Teclas: 1=Mover | 2=Rotacionar | 3=Escalar</div>
+
+<div id="controls">
+  <label>Target (.mind): <input type="file" id="uploadTarget"></label><br>
+  <label>Modelo 3D (GLB/FBX): <input type="file" id="uploadModel"></label><br>
+  <label>Áudio MP3: <input type="file" id="uploadAudio"></label><br>
+  <button id="generateQR">Gerar QR Code</button>
 </div>
 
-<!-- Three.js -->
+<!-- Dependências via CDN -->
 <script src="https://unpkg.com/three@0.150.0/build/three.min.js"></script>
-<!-- Loaders e Controls -->
 <script src="https://unpkg.com/three@0.150.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://unpkg.com/three@0.150.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://unpkg.com/three@0.150.0/examples/js/controls/TransformControls.js"></script>
-<!-- MindAR -->
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <script>
 window.addEventListener('load', async () => {
-  const mindAR = new window.MindARThree.MindARThree({
-    container: document.body,
-    imageTargetSrc: './targets.mind'
-  });
+  let mindAR, scene, camera, renderer;
+  let previewModel;
+  let audioPlayer;
 
-  const { renderer, scene, camera } = mindAR;
+  const orbitControls = null;
 
-  // Luz
-  const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-  scene.add(light);
+  // Função para iniciar MindAR com target selecionado
+  async function startMindAR(targetFile) {
+    mindAR = new window.MindARThree.MindARThree({
+      container: document.body,
+      imageTargetSrc: targetFile
+    });
+    ({ renderer, scene, camera } = mindAR);
 
-  // Anchor real do target
-  const anchor = mindAR.addAnchor(0);
+    // Luz
+    const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+    scene.add(light);
 
-  // OrbitControls
-  const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
-  orbitControls.enableDamping = true;
+    // Anchor real
+    const anchor = mindAR.addAnchor(0);
 
-  // Carregar modelo GLB
-  const loader = new THREE.GLTFLoader();
-  loader.load('./model.glb', (gltf) => {
-    const model = gltf.scene;
-    model.scale.set(0.2,0.2,0.2);
-    model.position.set(0,0,0);
+    // OrbitControls
+    const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+    orbitControls.enableDamping = true;
 
-    // Adiciona ao anchor real
-    anchor.group.add(model);
-
-    // Preview AR simulado
-    const previewModel = model.clone();
-    previewModel.position.set(0,0,-1); // 1 metro na frente da câmera
-    scene.add(previewModel);
-
-    // TransformControls
-    const transformControls = new THREE.TransformControls(camera, renderer.domElement);
-    transformControls.attach(previewModel);
-    scene.add(transformControls);
-
-    // Bloqueia OrbitControls durante manipulação
-    transformControls.addEventListener('dragging-changed', (event) => {
-      orbitControls.enabled = !event.value;
+    // Render loop
+    await mindAR.start();
+    renderer.setAnimationLoop(() => {
+      if (previewModel) orbitControls.update();
+      renderer.render(scene, camera);
     });
 
-    // Alterna modo: 1=translate, 2=rotate, 3=scale
-    window.addEventListener('keydown', (event) => {
-      switch(event.key){
-        case "1": transformControls.setMode('translate'); break;
-        case "2": transformControls.setMode('rotate'); break;
-        case "3": transformControls.setMode('scale'); break;
-      }
+    return { anchor, orbitControls };
+  }
+
+  // Upload target
+  document.getElementById('uploadTarget').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const { anchor, orbitControls } = await startMindAR(url);
+
+    // Upload Model
+    document.getElementById('uploadModel').addEventListener('change', (ev) => {
+      const modelFile = ev.target.files[0];
+      if (!modelFile) return;
+      const modelURL = URL.createObjectURL(modelFile);
+      const loader = new THREE.GLTFLoader();
+      loader.load(modelURL, (gltf) => {
+        previewModel = gltf.scene;
+        previewModel.position.set(0,0,-1); // preview AR
+        previewModel.scale.set(0.2,0.2,0.2);
+        scene.add(previewModel);
+
+        const transformControls = new THREE.TransformControls(camera, renderer.domElement);
+        transformControls.attach(previewModel);
+        scene.add(transformControls);
+
+        transformControls.addEventListener('dragging-changed', (event) => {
+          orbitControls.enabled = !event.value;
+        });
+
+        window.addEventListener('keydown', (event) => {
+          switch(event.key){
+            case "1": transformControls.setMode('translate'); break;
+            case "2": transformControls.setMode('rotate'); break;
+            case "3": transformControls.setMode('scale'); break;
+          }
+        });
+
+        transformControls.addEventListener('objectChange', () => {
+          console.log('Position:', previewModel.position);
+          console.log('Rotation:', previewModel.rotation);
+          console.log('Scale:', previewModel.scale);
+        });
+      });
     });
 
-    // Log automático de posição/rotacao/escala
-    transformControls.addEventListener('objectChange', () => {
-      console.log('Position:', previewModel.position);
-      console.log('Rotation (rad):', previewModel.rotation);
-      console.log('Scale:', previewModel.scale);
+    // Upload audio
+    document.getElementById('uploadAudio').addEventListener('change', (ev) => {
+      const audioFile = ev.target.files[0];
+      if (!audioFile) return;
+      const url = URL.createObjectURL(audioFile);
+      if (audioPlayer) audioPlayer.pause();
+      audioPlayer = new Audio(url);
+      audioPlayer.loop = true;
+      audioPlayer.play();
     });
   });
 
-  // Start AR
-  await mindAR.start();
-
-  // Render loop
-  renderer.setAnimationLoop(() => {
-    orbitControls.update();
-    renderer.render(scene, camera);
+  // Gerar QR Code
+  document.getElementById('generateQR').addEventListener('click', () => {
+    const currentURL = window.location.href;
+    QRCode.toCanvas(document.body, currentURL, { width:150 }, function (error) {
+      if (error) console.error(error);
+    });
   });
+
 });
 </script>
 </body>
