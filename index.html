@@ -1,270 +1,98 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MindAR — Plataforma AR (Protótipo)</title>
-  <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;display:flex;gap:12px;height:100vh}
-    #left{width:420px;padding:12px;box-sizing:border-box;overflow:auto;border-right:1px solid #ddd}
-    #right{flex:1;display:flex;flex-direction:column}
-    label{display:block;margin-top:8px;font-weight:600}
-    input[type=file]{width:100%}
-    .row{display:flex;gap:8px}
-    .control{margin-top:6px}
-    canvas{width:100%;height:100%;background:#000}
-    button{margin-top:10px;padding:8px 12px}
-    .small{font-size:13px;color:#666}
-  </style>
-</head>
-<body>
-  <div id="left">
-    <h2>Editor AR — Protótipo</h2>
-    <p class="small">Fluxo: (A) Compile seu target com o <strong>Image Targets Compiler</strong> do MindAR (gera arquivo <code>.mind</code>) — OU — faça upload do .mind já gerado. (B) Faça upload do modelo (GLB recomendado; FBX suportado). (C) Adicione áudio (mp3). (D) Ajuste posição/escala/rotação. (E) Exporte pacote para hospedagem (gera ZIP para publicação) e QR Code para o link hospedado.</p>
-
-    <label>1) Upload do arquivo target (.mind) gerado pelo <em>Image Targets Compiler</em>:</label>
-    <input id="mindFile" type="file" accept=".mind" />
-    <div class="small control">Não tem .mind? Vá em <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank">Image Targets Compiler (MindAR)</a> e faça o upload da imagem para baixar o .mind</div>
-
-    <label>2) Upload da imagem do target (opcional — para visualização)</label>
-    <input id="targetImage" type="file" accept="image/*" />
-
-    <label>3) Modelo 3D (GLB recomendado, FBX também)</label>
-    <input id="modelFile" type="file" accept=".glb,.gltf,.fbx" />
-
-    <label>4) Áudio (MP3)</label>
-    <input id="audioFile" type="file" accept="audio/mpeg" />
-
-    <hr />
-
-    <h3>Ajustes do modelo</h3>
-    <div class="row">
-      <div>
-        <label>Posição X Y Z (m)</label>
-        <input id="posX" type="number" step="0.01" value="0" placeholder="X" />
-        <input id="posY" type="number" step="0.01" value="0" placeholder="Y" />
-        <input id="posZ" type="number" step="0.01" value="0.1" placeholder="Z" />
-      </div>
-    </div>
-    <div class="row control">
-      <div>
-        <label>Escala X Y Z</label>
-        <input id="scaleX" type="number" step="0.01" value="1" />
-        <input id="scaleY" type="number" step="0.01" value="1" />
-        <input id="scaleZ" type="number" step="0.01" value="1" />
-      </div>
-    </div>
-    <div class="row control">
-      <div>
-        <label>Rotação X Y Z (deg)</label>
-        <input id="rotX" type="number" step="1" value="0" />
-        <input id="rotY" type="number" step="1" value="0" />
-        <input id="rotZ" type="number" step="1" value="0" />
-      </div>
-    </div>
-
-    <button id="previewBtn">Visualizar na página</button>
-    <button id="exportZip">Exportar pacote (ZIP)</button>
-
-    <div style="margin-top:12px">
-      <label>Gerar link (hosted) / QR</label>
-      <input id="hostedUrl" type="text" placeholder="Cole aqui a URL após hospedar o ZIP extraído" style="width:100%" />
-      <button id="genQR">Gerar QR Code</button>
-      <div id="qrcode" style="margin-top:8px"></div>
-    </div>
-
-    <hr />
-    <div class="small">
-      <strong>Notas importantes:</strong>
-      <ul>
-        <li>MindAR requer que você compile o target (.mind) — o compilador está em: <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank">Image Targets Compiler</a>.</li>
-        <li>Este protótipo exporta um pacote estático (HTML + assets) que você deverá hospedar em um servidor estático (GitHub Pages, Netlify, Vercel, S3, etc.).</li>
-        <li>Para usar FBX, o viewer usa <code>FBXLoader</code>. GLB/GLTF é recomendado por menor tamanho e melhor compatibilidade.</li>
-      </ul>
-    </div>
-  </div>
-
-  <div id="right">
-    <div style="flex:1;position:relative">
-      <iframe id="previewFrame" style="width:100%;height:100%;border:0" title="preview"></iframe>
-    </div>
-  </div>
-
-  <!-- Dependências usadas na geração ZIP e QR: jszip + qrcode -->
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-
-  <script>
-    // Funções utilitárias
-    const $ = id => document.getElementById(id);
-
-    async function fileToArrayBuffer(file){ return await file.arrayBuffer(); }
-    async function fileToDataUrl(file){ return new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(file); }); }
-
-    // Cria um viewer HTML (string) que será incluído no ZIP
-    function makeViewerHTML(config){
-      return `<!doctype html>
-<html>
-<head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AR Viewer</title>
-<style>body{margin:0}canvas{display:block}</style>
+<title>MindAR — Plataforma AR (Protótipo)</title>
+<style>
+body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;display:flex;gap:12px;height:100vh}
+#left{width:420px;padding:12px;box-sizing:border-box;overflow:auto;border-right:1px solid #ddd}
+#right{flex:1;display:flex;flex-direction:column}
+label{display:block;margin-top:8px;font-weight:600}
+input[type=file]{width:100%}
+.row{display:flex;gap:8px}
+.control{margin-top:6px}
+canvas{width:100%;height:100%;background:#000}
+button{margin-top:10px;padding:8px 12px}
+.small{font-size:13px;color:#666}
+</style>
 </head>
 <body>
-<script type="module">
-  import * as THREE from 'https://unpkg.com/three@0.150.0/build/three.module.js';
-  import { GLTFLoader } from 'https://unpkg.com/three@0.150.0/examples/jsm/loaders/GLTFLoader.js';
-  import { FBXLoader } from 'https://unpkg.com/three@0.150.0/examples/jsm/loaders/FBXLoader.js';
-  import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js';
+<div id="left">
+<h2>Editor AR — Protótipo</h2>
+<p class="small">Fluxo: (A) Compile seu target com o <strong>Image Targets Compiler</strong> do MindAR (gera arquivo <code>.mind</code>) — OU — faça upload do .mind já gerado. (B) Faça upload do modelo (GLB recomendado; FBX suportado). (C) Adicione áudio (mp3). (D) Ajuste posição/escala/rotação. (E) Exporte pacote para hospedagem (gera ZIP para publicação) e QR Code para o link hospedado.</p>
 
-  const mind = new MindARThree({ container: document.body, imageTargetSrc: './${config.mindFilename}' });
-  const { renderer, scene, camera } = mind;
 
-  const anchor = mind.addAnchor(0);
+<label>1) Upload do arquivo target (.mind) gerado pelo <em>Image Targets Compiler</em>:</label>
+<input id="mindFile" type="file" accept=".mind" />
+<div class="small control">Não tem .mind? Vá em <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank">Image Targets Compiler (MindAR)</a> e faça o upload da imagem para baixar o .mind</div>
 
-  // carregamento do modelo
-  async function loadModel(){
-    const modelPath = './${config.modelFilename}';
-    let obj;
-    if(modelPath.toLowerCase().endsWith('.glb')||modelPath.toLowerCase().endsWith('.gltf')){
-      const loader = new GLTFLoader();
-      const gltf = await loader.loadAsync(modelPath);
-      obj = gltf.scene;
-    } else if(modelPath.toLowerCase().endsWith('.fbx')){
-      const loader = new FBXLoader();
-      obj = loader.parse(await (await fetch(modelPath)).arrayBuffer());
-    }
-    obj.position.set(${config.posX}, ${config.posY}, ${config.posZ});
-    obj.scale.set(${config.scaleX}, ${config.scaleY}, ${config.scaleZ});
-    obj.rotation.set(${config.rotX} * Math.PI/180, ${config.rotY}*Math.PI/180, ${config.rotZ}*Math.PI/180);
-    anchor.group.add(obj);
 
-    // audio
-    if(${config.audioPresent}){
-      const listener = new THREE.AudioListener();
-      camera.add( listener );
-      const audio = new THREE.PositionalAudio( listener );
-      const response = await fetch('./${config.audioFilename}');
-      const arrayBuffer = await response.arrayBuffer();
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const buff = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
-      const bufferSource = audioCtx.createBufferSource();
-      // we'll use simple playback via HTMLAudioElement to keep compatibility
-      const audioEl = document.createElement('audio');
-      audioEl.src = './${config.audioFilename}';
-      audioEl.controls = true; audioEl.style.position='fixed'; audioEl.style.left='8px'; audioEl.style.top='8px';
-      document.body.appendChild(audioEl);
-    }
-  }
+<label>2) Upload da imagem do target (opcional — para visualização)</label>
+<input id="targetImage" type="file" accept="image/*" />
 
-  await loadModel();
 
-  await mind.start();
-  renderer.setAnimationLoop( ()=>{ renderer.render(scene, camera); });
-<\/script>
-</body>
-</html>`;
-    }
+<label>3) Modelo 3D (GLB recomendado, FBX também)</label>
+<input id="modelFile" type="file" accept=".glb,.gltf,.fbx" />
 
-    // Prepara dados para export
-    $('exportZip').addEventListener('click', async ()=>{
-      const mindFile = $('mindFile').files[0];
-      const modelFile = $('modelFile').files[0];
-      const audioFile = $('audioFile').files[0];
-      if(!mindFile || !modelFile){ alert('Envie pelo menos o arquivo .mind e o modelo 3D'); return; }
 
-      const cfg = {
-        mindFilename: mindFile.name,
-        modelFilename: modelFile.name,
-        audioFilename: audioFile ? audioFile.name : '',
-        posX: parseFloat($('posX').value)||0,
-        posY: parseFloat($('posY').value)||0,
-        posZ: parseFloat($('posZ').value)||0.1,
-        scaleX: parseFloat($('scaleX').value)||1,
-        scaleY: parseFloat($('scaleY').value)||1,
-        scaleZ: parseFloat($('scaleZ').value)||1,
-        rotX: parseFloat($('rotX').value)||0,
-        rotY: parseFloat($('rotY').value)||0,
-        rotZ: parseFloat($('rotZ').value)||0,
-        audioPresent: audioFile ? true : false
-      };
+<label>4) Áudio (MP3)</label>
+<input id="audioFile" type="file" accept="audio/mpeg" />
 
-      const zip = new JSZip();
-      zip.file('viewer.html', makeViewerHTML(cfg));
-      zip.file('config.json', JSON.stringify(cfg, null, 2));
 
-      zip.file(mindFile.name, await fileToArrayBuffer(mindFile));
-      zip.file(modelFile.name, await fileToArrayBuffer(modelFile));
-      if(audioFile) zip.file(audioFile.name, await fileToArrayBuffer(audioFile));
+<hr />
 
-      const content = await zip.generateAsync({type:'blob'});
-      const url = URL.createObjectURL(content);
-      const a = document.createElement('a'); a.href = url; a.download = 'ar_package.zip'; a.click();
-    });
 
-    // Preview: cria um pacote temporário in-memory e carrega no iframe usando object URLs
-    $('previewBtn').addEventListener('click', async ()=>{
-      const mindFile = $('mindFile').files[0];
-      const modelFile = $('modelFile').files[0];
-      const audioFile = $('audioFile').files[0];
-      if(!mindFile || !modelFile){ alert('Envie .mind e modelo para pré-visualizar'); return; }
+<h3>Ajustes do modelo</h3>
+<div class="row">
+<div>
+<label>Posição X Y Z (m)</label>
+<input id="posX" type="number" step="0.01" value="0" placeholder="X" />
+<input id="posY" type="number" step="0.01" value="0" placeholder="Y" />
+<input id="posZ" type="number" step="0.01" value="0.1" placeholder="Z" />
+</div>
+</div>
+<div class="row control">
+<div>
+<label>Escala X Y Z</label>
+<input id="scaleX" type="number" step="0.01" value="1" />
+<input id="scaleY" type="number" step="0.01" value="1" />
+<input id="scaleZ" type="number" step="0.01" value="1" />
+</div>
+</div>
+<div class="row control">
+<div>
+<label>Rotação X Y Z (deg)</label>
+<input id="rotX" type="number" step="1" value="0" />
+<input id="rotY" type="number" step="1" value="0" />
+<input id="rotZ" type="number" step="1" value="0" />
+</div>
+</div>
 
-      const cfg = {
-        mindFilename: mindFile.name,
-        modelFilename: modelFile.name,
-        audioFilename: audioFile ? audioFile.name : '',
-        posX: parseFloat($('posX').value)||0,
-        posY: parseFloat($('posY').value)||0,
-        posZ: parseFloat($('posZ').value)||0.1,
-        scaleX: parseFloat($('scaleX').value)||1,
-        scaleY: parseFloat($('scaleY').value)||1,
-        scaleZ: parseFloat($('scaleZ').value)||1,
-        rotX: parseFloat($('rotX').value)||0,
-        rotY: parseFloat($('rotY').value)||0,
-        rotZ: parseFloat($('rotZ').value)||0,
-        audioPresent: audioFile ? true : false
-      };
 
-      const zip = new JSZip();
-      zip.file('viewer.html', makeViewerHTML(cfg));
-      zip.file(mindFile.name, await fileToArrayBuffer(mindFile));
-      zip.file(modelFile.name, await fileToArrayBuffer(modelFile));
-      if(audioFile) zip.file(audioFile.name, await fileToArrayBuffer(audioFile));
-      const blob = await zip.generateAsync({type:'blob'});
-      const url = URL.createObjectURL(blob);
+<button id="previewBtn">Visualizar na página</button>
+<button id="exportZip">Exportar pacote (ZIP)</button>
 
-      // create a blob URL for the zip, then open in iframe using a tiny in-memory filesystem via JS
-      // Simpler: extract in memory and serve viewer.html via blob URL with assets as separate blob URLs by mapping names to blob URLs.
-      // We'll extract files and create a small HTML that fetches assets via blob URLs.
-      const z = await JSZip.loadAsync(blob);
-      const fileMap = {};
-      for(const f of Object.keys(z.files)){
-        if(f==='viewer.html') continue;
-        const data = await z.file(f).async('blob');
-        fileMap[f] = URL.createObjectURL(data);
-      }
-      let viewer = await z.file('viewer.html').async('string');
-      // replace asset references like ./name with blob urls
-      for(const name of Object.keys(fileMap)){
-        const re = new RegExp("\\.\/" + name.replace(/[.*+?^${}()|[\]\\]/g,'\\\\$&'), 'g');
-        viewer = viewer.replace(re, fileMap[name]);
-      }
-      const viewerBlob = new Blob([viewer], {type:'text/html'});
-      const viewerUrl = URL.createObjectURL(viewerBlob);
-      $('previewFrame').src = viewerUrl;
-    });
 
-    // QR generation: user provides a hosted URL (after uploading the exported package)
-    $('genQR').addEventListener('click', ()=>{
-      const u = $('hostedUrl').value.trim();
-      if(!u) return alert('Cole a URL pública do viewer após hospedar o pacote');
-      QRCode.toDataURL(u).then(dataUrl=>{
-        const img = document.createElement('img'); img.src = dataUrl; img.style.maxWidth='200px';
-        $('qrcode').innerHTML=''; $('qrcode').appendChild(img);
-      });
-    });
+<div style="margin-top:12px">
+<label>Gerar link (hosted) / QR</label>
+<input id="hostedUrl" type="text" placeholder="Cole aqui a URL após hospedar o ZIP extraído" style="width:100%" />
+<button id="genQR">Gerar QR Code</button>
+<div id="qrcode" style="margin-top:8px"></div>
+</div>
 
-  </script>
-</body>
+
+<hr />
+<div class="small">
+<strong>Notas importantes:</strong>
+<ul>
+<li>MindAR requer que você compile o target (.mind) — o compilador está em: <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank">Image Targets Compiler</a>.</li>
+<li>Este protótipo exporta um pacote estático (HTML + assets) que você deverá hospedar em um servidor estático (GitHub Pages, Netlify, Vercel, S3, etc.).</li>
+<li>Para usar FBX, o viewer usa <code>FBXLoader</code>. GLB/GLTF é recomendado por menor tamanho e melhor compatibilidade.</li>
+</ul>
+</div>
+</div>
+
+
+<div id="right">
 </html>
