@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindAR - Realidade Aumentada</title>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image.prod.js"></script>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-card h2 {
+            margin-bottom: 15px;
+            color: #ffcc00;
+        }
+        
+        .info-card ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .info-card li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .info-card li:before {
+            content: "•";
+            color: #ffcc00;
+            position: absolute;
+            left: 0;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #ffcc00;
+        }
+        
+        .ar-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        #ar-scene {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .target-image {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .target-image img {
+            max-width: 200px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background: #ffcc00;
+            color: #1a2a6c;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background: #ffd633;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 10;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MindAR - Realidade Aumentada</h1>
+            <p class="subtitle">Experiência de RA diretamente no navegador</p>
+        </header>
+        
+        <div class="content">
+            <div class="info-card">
+                <h2>O que é o MindAR?</h2>
+                <p>MindAR é uma biblioteca JavaScript de código aberto que permite criar experiências de realidade aumentada diretamente no navegador, sem necessidade de aplicativos.</p>
+                
+                <div class="instructions">
+                    <h3>Como usar:</h3>
+                    <ol>
+                        <li>Clique em "Iniciar Câmera" para ativar a câmera</li>
+                        <li>Aponte para a imagem alvo (ao lado)</li>
+                        <li>Veja o modelo 3D aparecer em realidade aumentada!</li>
+                    </ol>
+                </div>
+                
+                <h2>Vantagens do MindAR:</h2>
+                <ul>
+                    <li>Funciona diretamente no navegador</li>
+                    <li>Não requer instalação de aplicativos</li>
+                    <li>Compatível com dispositivos móveis e desktop</li>
+                    <li>Fácil implementação com HTML</li>
+                    <li>Suporte a múltiplos alvos</li>
+                    <li>Rastreamento em tempo real</li>
+                </ul>
+            </div>
+            
+            <div class="info-card">
+                <h2>Experiência de Realidade Aumentada</h2>
+                
+                <div class="ar-container">
+                    <div id="loading" class="loading">
+                        <p>Carregando realidade aumentada...</p>
+                        <p>Por favor, aguarde.</p>
+                    </div>
+                    
+                    <a-scene 
+                        id="ar-scene"
+                        mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.3/examples/image-tracking/assets/band-example/band.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
+                        color-space="sRGB"
+                        embedded
+                        renderer="colorManagement: true, physicallyCorrectLights"
+                        vr-mode-ui="enabled: false"
+                        device-orientation-permission-ui="enabled: false">
+                        
+                        <a-assets>
+                            <a-asset-item id="bearModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.3/examples/image-tracking/assets/band-example/bear.gltf"></a-asset-item>
+                        </a-assets>
+
+                        <a-camera active="false" position="0 0 0"></a-camera>
+
+                        <a-entity mindar-image-target="targetIndex: 0">
+                            <a-gltf-model 
+                                rotation="0 0 0 " 
+                                position="0 0 0.1" 
+                                scale="0.05 0.05 0.05" 
+                                src="#bearModel"
+                                animation="property: rotation; to: 0 360 0; loop: true; dur: 5000">
+                            </a-gltf-model>
+                        </a-entity>
+                    </a-scene>
+                </div>
+                
+                <div class="target-image">
+                    <p>Imagem alvo para rastreamento:</p>
+                    <img src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.3/examples/image-tracking/assets/band-example/band.png" alt="Imagem alvo">
+                </div>
+                
+                <div class="controls">
+                    <button id="startButton">Iniciar Câmera</button>
+                    <button id="stopButton">Parar Câmera</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Desenvolvido com MindAR.js - Uma biblioteca de realidade aumentada para a web</p>
+            <p>Funciona melhor em dispositivos móveis com câmera traseira</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startButton = document.getElementById('startButton');
+            const stopButton = document.getElementById('stopButton');
+            const loadingElement = document.getElementById('loading');
+            const scene = document.getElementById('ar-scene');
+            
+            // Iniciar a experiência AR
+            startButton.addEventListener('click', function() {
+                loadingElement.classList.remove('hidden');
+                
+                // Iniciar o sistema MindAR
+                const arSystem = scene.systems["mindar-image-system"];
+                arSystem.start().then(() => {
+                    loadingElement.classList.add('hidden');
+                });
+                
+                startButton.disabled = true;
+                stopButton.disabled = false;
+            });
+            
+            // Parar a experiência AR
+            stopButton.addEventListener('click', function() {
+                const arSystem = scene.systems["mindar-image-system"];
+                arSystem.stop();
+                
+                startButton.disabled = false;
+                stopButton.disabled = true;
+            });
+            
+            // Inicialmente desabilitar o botão de parar
+            stopButton.disabled = true;
+        });
+    </script>
+</body>
+</html>
