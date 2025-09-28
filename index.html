@@ -1,98 +1,76 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>MindAR — Plataforma AR (Protótipo)</title>
-<style>
-body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;display:flex;gap:12px;height:100vh}
-#left{width:420px;padding:12px;box-sizing:border-box;overflow:auto;border-right:1px solid #ddd}
-#right{flex:1;display:flex;flex-direction:column}
-label{display:block;margin-top:8px;font-weight:600}
-input[type=file]{width:100%}
-.row{display:flex;gap:8px}
-.control{margin-top:6px}
-canvas{width:100%;height:100%;background:#000}
-button{margin-top:10px;padding:8px 12px}
-.small{font-size:13px;color:#666}
-</style>
-</head>
-<body>
-<div id="left">
-<h2>Editor AR — Protótipo</h2>
-<p class="small">Fluxo: (A) Compile seu target com o <strong>Image Targets Compiler</strong> do MindAR (gera arquivo <code>.mind</code>) — OU — faça upload do .mind já gerado. (B) Faça upload do modelo (GLB recomendado; FBX suportado). (C) Adicione áudio (mp3). (D) Ajuste posição/escala/rotação. (E) Exporte pacote para hospedagem (gera ZIP para publicação) e QR Code para o link hospedado.</p>
+import { MindARThree } from "mind-ar/dist/mindar-image-three.prod.js";
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 
+document.addEventListener("DOMContentLoaded", () => {
+  const mindarThree = new MindARThree({
+    container: document.body,
+    imageTargetSrc: "./targets.mind"
+  });
 
-<label>1) Upload do arquivo target (.mind) gerado pelo <em>Image Targets Compiler</em>:</label>
-<input id="mindFile" type="file" accept=".mind" />
-<div class="small control">Não tem .mind? Vá em <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank">Image Targets Compiler (MindAR)</a> e faça o upload da imagem para baixar o .mind</div>
+  const { renderer, scene, camera } = mindarThree;
 
+  // Luz básica
+  const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+  scene.add(light);
 
-<label>2) Upload da imagem do target (opcional — para visualização)</label>
-<input id="targetImage" type="file" accept="image/*" />
+  // Anchor real do target
+  const anchor = mindarThree.addAnchor(0);
 
+  // OrbitControls só para navegação no preview
+  const orbitControls = new OrbitControls(camera, renderer.domElement);
+  orbitControls.enableDamping = true;
 
-<label>3) Modelo 3D (GLB recomendado, FBX também)</label>
-<input id="modelFile" type="file" accept=".glb,.gltf,.fbx" />
+  // Loader do GLB
+  const loader = new GLTFLoader();
+  loader.load("./model.glb", (gltf) => {
+    const model = gltf.scene;
+    model.scale.set(0.2, 0.2, 0.2);
+    model.position.set(0, 0, 0);
 
+    // Modelo no target real
+    anchor.group.add(model);
 
-<label>4) Áudio (MP3)</label>
-<input id="audioFile" type="file" accept="audio/mpeg" />
+    // 🔹 Modelo "fake preview" para ajuste
+    const previewModel = model.clone();
+    previewModel.position.set(0, 0, -1); // 1 metro na frente da câmera
+    scene.add(previewModel);
 
+    // TransformControls no modelo fake
+    const transformControls = new TransformControls(camera, renderer.domElement);
+    transformControls.attach(previewModel);
+    scene.add(transformControls);
 
-<hr />
+    // Bloqueia Orbit quando usando TransformControls
+    transformControls.addEventListener("dragging-changed", (event) => {
+      orbitControls.enabled = !event.value;
+    });
 
+    // Alterna modo: tecla 1 = mover, 2 = girar, 3 = escalar
+    window.addEventListener("keydown", (event) => {
+      switch (event.key) {
+        case "1":
+          transformControls.setMode("translate");
+          break;
+        case "2":
+          transformControls.setMode("rotate");
+          break;
+        case "3":
+          transformControls.setMode("scale");
+          break;
+      }
+    });
+  });
 
-<h3>Ajustes do modelo</h3>
-<div class="row">
-<div>
-<label>Posição X Y Z (m)</label>
-<input id="posX" type="number" step="0.01" value="0" placeholder="X" />
-<input id="posY" type="number" step="0.01" value="0" placeholder="Y" />
-<input id="posZ" type="number" step="0.01" value="0.1" placeholder="Z" />
-</div>
-</div>
-<div class="row control">
-<div>
-<label>Escala X Y Z</label>
-<input id="scaleX" type="number" step="0.01" value="1" />
-<input id="scaleY" type="number" step="0.01" value="1" />
-<input id="scaleZ" type="number" step="0.01" value="1" />
-</div>
-</div>
-<div class="row control">
-<div>
-<label>Rotação X Y Z (deg)</label>
-<input id="rotX" type="number" step="1" value="0" />
-<input id="rotY" type="number" step="1" value="0" />
-<input id="rotZ" type="number" step="1" value="0" />
-</div>
-</div>
-
-
-<button id="previewBtn">Visualizar na página</button>
-<button id="exportZip">Exportar pacote (ZIP)</button>
-
-
-<div style="margin-top:12px">
-<label>Gerar link (hosted) / QR</label>
-<input id="hostedUrl" type="text" placeholder="Cole aqui a URL após hospedar o ZIP extraído" style="width:100%" />
-<button id="genQR">Gerar QR Code</button>
-<div id="qrcode" style="margin-top:8px"></div>
-</div>
-
-
-<hr />
-<div class="small">
-<strong>Notas importantes:</strong>
-<ul>
-<li>MindAR requer que você compile o target (.mind) — o compilador está em: <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank">Image Targets Compiler</a>.</li>
-<li>Este protótipo exporta um pacote estático (HTML + assets) que você deverá hospedar em um servidor estático (GitHub Pages, Netlify, Vercel, S3, etc.).</li>
-<li>Para usar FBX, o viewer usa <code>FBXLoader</code>. GLB/GLTF é recomendado por menor tamanho e melhor compatibilidade.</li>
-</ul>
-</div>
-</div>
-
-
-<div id="right">
-</html>
+  // Loop de renderização
+  const start = async () => {
+    await mindarThree.start();
+    renderer.setAnimationLoop(() => {
+      orbitControls.update();
+      renderer.render(scene, camera);
+    });
+  };
+  start();
+});
